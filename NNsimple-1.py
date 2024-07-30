@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # %%
 # Funcion de activacion 
@@ -151,6 +152,23 @@ def model(X, Y, n_x, n_h, n_y, num_of_iters, learning_rate, initialize_parameter
     return parameters
 
 # %%
+def model2(X, Y, n_x, n_h, n_y, num_of_iters, learning_rate):
+    parameters = initialize_parameters_random(n_x, n_h, n_y)
+    costs = []
+
+    for i in range(0, num_of_iters+1):
+        a2, cache = forward_prop(X, parameters)
+        cost = loss_function(a2, Y)
+        grads = backward_prop(X, Y, cache, parameters)
+        parameters = update_parameters(parameters, grads, learning_rate)
+
+        if i % 100 == 0:
+            costs.append(cost)
+            print('Cost after iteration# {:d}: {:f}'.format(i, cost))
+
+    return parameters, costs
+
+# %%
 def predict(X, parameters):
     a2, cache = forward_prop(X, parameters)
     yhat = a2
@@ -197,3 +215,31 @@ print(trained_parameters_random)
 X_test = np.array([[1], [1]])
 y_predict = predict(X_test, trained_parameters_random)
 print('\nNeural Network prediction for example ({:d}, {:d}) is {:d}'.format(X_test[0][0], X_test[1][0], y_predict))
+
+# %%
+np.random.seed(2)
+X = np.array([[0, 0, 1, 1], [0, 1, 0, 1]])
+Y = np.array([[0, 1, 1, 0]])
+m = X.shape[1]
+
+n_x = 2
+n_h = 2
+n_y = 1
+num_of_iters = 1000
+
+learning_rates = [0.01, 0.1, 0.5]
+costs_dict = {}
+
+for lr in learning_rates:
+    print(f"\nTraining with learning rate: {lr}")
+    trained_parameters, costs = model2(X, Y, n_x, n_h, n_y, num_of_iters, lr)
+    costs_dict[lr] = costs
+
+for lr in learning_rates:
+    plt.plot(np.squeeze(costs_dict[lr]), label=f'lr={lr}')
+
+plt.ylabel('Cost')
+plt.xlabel('Iterations (per hundreds)')
+plt.legend(loc='upper right')
+plt.title('Cost reduction over iterations for different learning rates')
+plt.show()
